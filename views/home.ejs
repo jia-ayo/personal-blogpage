@@ -1,0 +1,10 @@
+<%- include("partials/header") %> 
+<h1>home</h1>
+<p><%= startingContent %> </p> 
+<% blogs.forEach(blog => {%>
+   <h1> <%= blog.Topic  %> </h1>
+   <p> <%= blog.Post.substring(1, 100) + "..."   %>  
+   <a href="/blogs/<%=blog.Topic%>">read more</a> </p>
+<%  }); %> 
+
+<%- include("partials/footer") %> 
