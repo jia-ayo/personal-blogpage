@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const _ = require("lodash");
 const mongoose = require("mongoose");
+const { find } = require('lodash');
 
 mongoose.connect("mongodb://localhost/postsDB");
 const blogSchema= new mongoose.Schema({
@@ -29,10 +30,14 @@ let blogs = [];
 
 
 app.get("/", (req, res) => {
-  res.render(`home` , { 
-    startingContent : homeStartingContent, 
-    blogs: blogs, 
-  });
+
+  Blog.find({}, (err, blogs)=>{
+    res.render(`home` , { 
+      startingContent : homeStartingContent, 
+      blogs: blogs, 
+    });
+  })
+
 })
 
 
@@ -54,26 +59,49 @@ app.post("/compose", (req, res)=>{
     Topic : req.body.blogTopic, 
     Post: req.body.blogPost
   });
-  blog.save()
+  blog.save((err)=>{
+    if(!err){
+      res.redirect("/");
+    }
+  })
   blogs.push(blog);
   
-  res.redirect("/");
+  
 })
 
-app.get("/blogs/:topic", (req, res)=>{
-  const topicName = _.lowerCase(req.params.topic) ;
+// app.get("/blogs/:topicId", (req, res)=>{
+//   const topicName = _.lowerCase(req.params.topicId) ;
+//   const requestBlogId = req.params.topicId
  
-  blogs.forEach(blog =>{
-    const storedTopic = _.lowerCase(blog.Topic);
-    if ( topicName === storedTopic){
-      res.render("post", {
-        Topic: blog.Topic, 
-        Content: blog.Post
-      });
-    }
-  });
-});
+//   blogs.forEach(blog =>{
+//     const storedTopic = _.lowerCase(blog.Topic);
+//     if ( topicName === storedTopic){
+//       Blog.findOne({_id: requestBlogId}, (err, blog)=>{
+//         if (!err){
+          
+//         }
+//       })
+//       res.render("post", {
+//         Topic: blog.Topic, 
+//         Content: blog.Post
+//       });
+//     }
+//   });
+// });
+app.get("/blogs/:topicId", (req, res)=>{
+  const requestBlogId = req.params.topicId
 
-app.listen(3000, function() {
+      Blog.findOne({_id: requestBlogId}, (err, blog)=>{
+        res.render("post", {
+          Topic: blog.Topic, 
+          Content: blog.Post
+        });
+      })
+
+  });
+
+
+
+app.listen(process.env.PORT ||3000, function() {
   console.log("Server started on port 3000");
 });
